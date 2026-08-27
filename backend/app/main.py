@@ -1,40 +1,30 @@
-from services.pdf_service import extract_text_from_pdf
-from services.text_processor import clean_text, split_into_chunks
+from services.vector_store import search_similar_chunks
 
 
-def main():
-
-    pdf_path = "../../data/papers/research_paper.pdf"
-
-    # Step 1: Extract PDF text
-    raw_text = extract_text_from_pdf(pdf_path)
-
-    print("\n========== RAW TEXT ==========\n")
-    print(raw_text[:1000])
-
-    # Step 2: Clean text
-    cleaned_text = clean_text(raw_text)
-
-    print("\n========== CLEANED TEXT ==========\n")
-    print(cleaned_text[:1000])
-
-    # Step 3: Create chunks
-    chunks = split_into_chunks(
-        cleaned_text,
-        chunk_size=1000,
-        chunk_overlap=200
-    )
-
-    print("\n========== CHUNKING ==========\n")
-
-    print("Total characters:", len(cleaned_text))
-    print("Total chunks:", len(chunks))
-
-    for i, chunk in enumerate(chunks[:3], start=1):
-
-        print(f"\n--- Chunk {i} ---")
-        print(chunk[:500])
+stored_data = [
+    {
+        "text": "The dataset contains 10,000 plant leaf images.",
+        "embedding": [0.9, 0.1, 0.0]
+    },
+    {
+        "text": "The model uses a convolutional neural network.",
+        "embedding": [0.1, 0.9, 0.0]
+    },
+    {
+        "text": "The model achieved 94 percent accuracy.",
+        "embedding": [0.0, 0.1, 0.9]
+    }
+]
 
 
-if __name__ == "__main__":
-    main()
+query_embedding = [0.85, 0.15, 0.0]
+
+results = search_similar_chunks(
+    query_embedding,
+    stored_data,
+    top_k=2
+)
+
+for result in results:
+    print("\nScore:", result["score"])
+    print("Text:", result["text"])
