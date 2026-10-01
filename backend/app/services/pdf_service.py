@@ -1,43 +1,21 @@
-from pathlib import Path
-from pypdf import PdfReader
+import fitz
 
 
-def extract_text_from_pdf(file_path: str) -> str:
-    """
-    Extract text from every page of a PDF.
+def extract_text_from_pdf(file_path):
 
-    Args:
-        file_path: Path to the PDF file.
+    document = fitz.open(file_path)
 
-    Returns:
-        All extracted text combined into one string.
-    """
+    pages = []
 
-    path = Path(file_path)
+    for page_number, page in enumerate(document, start=1):
 
-    if not path.exists():
-        raise FileNotFoundError(f"PDF file not found: {file_path}")
+        text = page.get_text()
 
-    if path.suffix.lower() != ".pdf":
-        raise ValueError("The provided file is not a PDF.")
+        pages.append({
+            "page": page_number,
+            "text": text
+        })
 
-    reader = PdfReader(str(path))
+    document.close()
 
-    pages_text = []
-
-    for page_number, page in enumerate(reader.pages, start=1):
-
-        text = page.extract_text()
-
-        if text:
-            pages_text.append(
-                f"\n--- Page {page_number} ---\n{text}"
-            )
-
-    if not pages_text:
-        raise ValueError(
-            "No text could be extracted from this PDF. "
-            "The PDF may be scanned or image-based."
-        )
-
-    return "\n".join(pages_text)
+    return pages

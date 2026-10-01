@@ -1,30 +1,16 @@
-from services.vector_store import search_similar_chunks
+from services.rag_service import answer_question
 
 
-stored_data = [
-    {
-        "text": "The dataset contains 10,000 plant leaf images.",
-        "embedding": [0.9, 0.1, 0.0]
-    },
-    {
-        "text": "The model uses a convolutional neural network.",
-        "embedding": [0.1, 0.9, 0.0]
-    },
-    {
-        "text": "The model achieved 94 percent accuracy.",
-        "embedding": [0.0, 0.1, 0.9]
-    }
-]
+while True:
 
+    question = input("Ask Scholar.AI a question: ")
 
-query_embedding = [0.85, 0.15, 0.0]
+    if question.lower() == "exit":
+        print("Scholar.AI: Goodbye!")
+        break
 
-results = search_similar_chunks(
-    query_embedding,
-    stored_data,
-    top_k=2
-)
+    answer = answer_question(question)
 
-for result in results:
-    print("\nScore:", result["score"])
-    print("Text:", result["text"])
+    print("\nScholar.AI:")
+    print(answer)
+    print()

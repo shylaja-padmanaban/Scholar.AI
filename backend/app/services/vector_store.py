@@ -1,4 +1,6 @@
 import json
+import faiss
+import numpy as np
 
 
 def save_embeddings(data, file_path="embeddings.json"):
@@ -45,3 +47,43 @@ def search_similar_chunks(query_embedding, stored_data, top_k=3):
     )
 
     return results[:top_k]
+
+def build_faiss_index(stored_data):
+    vectors = np.array(
+        [item["embedding"] for item in stored_data],
+        dtype="float32"
+    )
+
+    dimension = vectors.shape[1]
+
+    index = faiss.IndexFlatIP(dimension)
+
+    faiss.normalize_L2(vectors)
+
+    index.add(vectors)
+
+    return index
+
+def search_faiss(query_embedding, index, stored_data, top_k=3):
+    query_vector = np.array(
+        [query_embedding],
+        dtype="float32"
+    )
+
+    faiss.normalize_L2(query_vector)
+
+    scores, indices = index.search(query_vector, top_k)
+
+    results = []
+
+    for score, idx in zip(scores[0], indices[0]):
+        if idx == -1:
+            continue
+
+        results.append({
+            "chunk_id": stored_data[idx]["chunk_id"],
+            "text": stored_data[idx]["text"],
+            "score": float(score)
+        })
+
+    return results
